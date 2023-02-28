@@ -21,7 +21,7 @@ window.addEventListener('load', function() {
             this.dy = 0;
             this.speedModifier = 5;
             this.spriteWidth = 255;
-            this.spriteHeight = 255;
+            this.spriteHeight = 256;
             this.width = this.spriteWidth;
             this.height = this.spriteHeight;
             this.spriteX;
@@ -63,8 +63,6 @@ window.addEventListener('load', function() {
             else if(angle < 1.17) this.frameY = 3;
             else if(angle < 1.96) this.frameY = 4;
             else if(angle < 2.74) this.frameY = 5;
-
-            console.log(angle);
 
             const distance = Math.hypot(this.dy, this.dx);
 
@@ -145,6 +143,9 @@ window.addEventListener('load', function() {
             this.topMargin = 260;
             this.debug = true;
             this.player = new Player(this);
+            this.fps = 144;
+            this.timer = 0;
+            this.interval = 1000 / this.fps;
             this.numberOfObstacles = 10;
             this.obstacles = [];
             this.mouse = {
@@ -177,10 +178,16 @@ window.addEventListener('load', function() {
             })
         }
 
-        render(context) {
-            this.obstacles.forEach(obstacle => obstacle.draw(context));
-            this.player.draw(context);
-            this.player.update();
+        render(context, deltaTime) {
+            if(this.timer > this.interval) {
+                // ? An optimization for this would be to have multiple canvases and only update the necesary ones. 
+                ctx.clearRect(0, 0, this.width, this.height);
+                this.timer = 0;
+                this.obstacles.forEach(obstacle => obstacle.draw(context));
+                this.player.draw(context);
+                this.player.update();
+            }
+            this.timer += deltaTime;
         }
 
         checkCollision(a, b) {
@@ -225,12 +232,13 @@ window.addEventListener('load', function() {
 
     const game = new Game(canvas);
     game.init();
-    game.render(ctx);
-    console.log(game);
 
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        game.render(ctx);
+    let lastTime = 0;
+
+    function animate(timeStamp = 0) {
+        const deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
+        game.render(ctx, deltaTime);
         window.requestAnimationFrame(animate);
     }
 
