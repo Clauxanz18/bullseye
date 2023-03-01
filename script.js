@@ -133,6 +133,10 @@ window.addEventListener('load', function() {
                 context.stroke();
             }
         }
+
+        update() {
+
+        }
     }
 
     class Egg {
@@ -152,7 +156,6 @@ window.addEventListener('load', function() {
         }
 
         draw(context) {
-            console.info('drawing egg', this.image, this.spriteX, this.spriteY )
             context.drawImage(this.image, this.spriteX, this.spriteY)
             if(this.game.debug) {
                 context.beginPath();
@@ -201,6 +204,7 @@ window.addEventListener('load', function() {
             this.numberOfObstacles = 10;
             this.obstacles = [];
             this.eggs = [];
+            this.gameObjects = [];
             this.maxEggs = 10;
             this.mouse = {
                 x: this.width * 0.5,
@@ -236,14 +240,16 @@ window.addEventListener('load', function() {
             if(this.timer > this.interval) {
                 // ? An optimization for this would be to have multiple canvases and only update the necesary ones. 
                 ctx.clearRect(0, 0, this.width, this.height);
+                this.gameObjects = [...this.obstacles, ...this.eggs, this.player];
+                // ? An optimization here would be to only sort this array if the vertical position of an object changes or is added/removed
+                this.gameObjects.sort((a, b) => {
+                    return a.collisionY - b.collisionY;
+                })
+                this.gameObjects.forEach(object => {
+                    object.draw(context);
+                    object.update()
+                })
                 this.timer = 0;
-                this.obstacles.forEach(obstacle => obstacle.draw(context));
-                this.eggs.forEach(egg => {
-                    egg.draw(context);
-                    egg.update();
-                });
-                this.player.draw(context);
-                this.player.update();
             }
             this.timer += deltaTime;
 
@@ -251,10 +257,8 @@ window.addEventListener('load', function() {
             if (this.eggTimer > this.eggInterval && this.eggs.length < this.maxEggs) {
                 this.addEgg();
                 this.eggTimer = 0;
-                console.info('added egg')
             } else {
                 this.eggTimer += deltaTime;
-                console.info('added time')
             }
         }
 
@@ -267,7 +271,6 @@ window.addEventListener('load', function() {
         }
 
         addEgg() {
-            console.info('add Egg: ', this.eggs);
             this.eggs.push(new Egg(this))
         }
 
