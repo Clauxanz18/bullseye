@@ -247,7 +247,7 @@ window.addEventListener('load', function() {
             }
 
             // * Collision with objects
-            let collisionObjects = [this.game.player, ...this.game.obstacles, ...this.game.enemies];
+            let collisionObjects = [this.game.player, ...this.game.obstacles];
             collisionObjects.forEach(object => {
                 // ? [(distance < sumOfRadii), distance, sumOfRadii, dx, dy]
                 const [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, object)
