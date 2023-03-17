@@ -6,7 +6,7 @@ window.addEventListener('load', function() {
 
     ctx.fillStyle = 'white';
     ctx.lineWidth = 3;
-    ctx.strokeStyle = 'white';
+    ctx.strokeStyle = 'black';
     ctx.font = '40px Helvetica';
     ctx.textAlign = 'center';
 
@@ -244,6 +244,10 @@ window.addEventListener('load', function() {
                 this.markedForDeletion = true;
                 this.game.removeGameObjects();
                 this.game.score++;
+
+                for (let i = 0; i< 3; i++) {
+                    this.game.particles.push(new Firefly(this.game, this.collisionX, this.collisionY, 'yellow'));
+                }
             }
 
             // * Collision with objects
@@ -269,6 +273,7 @@ window.addEventListener('load', function() {
             })
         }
     }
+
     class Enemy {
         constructor(game) {
             this.game = game;
@@ -322,6 +327,50 @@ window.addEventListener('load', function() {
         }
     }
 
+    class Particle {
+        constructor(game, x, y, color) {
+            this.game = game;
+            this.collisionX = x;
+            this.collisionY = y;
+            this.color = color;
+            this.radius = Math.floor(Math.random() * 10 + 5);
+            this.speedX = Math.random() * 6 - 3;
+            this.speedY = Math.random() * 2 + 0.5;
+            this.angle = 0;
+            this.va = Math.random() * 0.1 + 0.01;
+            this.markedForDeletion = false;
+
+        }
+
+        draw(context) {
+            context.save();
+            context.fillStyle = this.color;
+            context.beginPath();
+            context.arc(this.collisionX, this.collisionY, this.radius, 0, Math.PI * 2);
+            context.fill();
+            context.stroke();
+            context.restore();
+        }
+    }
+
+    class Firefly extends Particle {
+        update() {
+            this.angle += this.va;
+            this.collisionX += this.speedX;
+            this.collisionY -= this.speedY;
+            if(this.collisionY < 0 - this.radius) {
+                this.markedForDeletion = true;
+                this.game.removeGameObjects();
+            }
+        }
+    }
+
+    class Spark extends Particle {
+        update() {
+            
+        }
+    }
+
     class Game {
         constructor(canvas) {
             this.canvas = canvas;
@@ -340,6 +389,7 @@ window.addEventListener('load', function() {
             this.eggs = [];
             this.enemies = [];
             this.hatchlings = [];
+            this.particles = [];
             this.gameObjects = [];
             this.score = 0;
             this.lostHatchlings = 0;
@@ -378,7 +428,7 @@ window.addEventListener('load', function() {
             if(this.timer > this.interval) {
                 // ? An optimization for this would be to have multiple canvases and only update the necesary ones. 
                 ctx.clearRect(0, 0, this.width, this.height);
-                this.gameObjects = [...this.obstacles, ...this.eggs, this.player, ...this.enemies, ...this.hatchlings];
+                this.gameObjects = [...this.obstacles, ...this.eggs, this.player, ...this.enemies, ...this.hatchlings, ...this.particles];
                 // ? An optimization here would be to only sort this array if the vertical position of an object changes or is added/removed
                 this.gameObjects.sort((a, b) => {
                     return a.collisionY - b.collisionY;
@@ -429,6 +479,7 @@ window.addEventListener('load', function() {
         removeGameObjects() {
             this.eggs = this.eggs.filter(egg => !egg.markedForDeletion);
             this.hatchlings = this.hatchlings.filter(hatchling => !hatchling.markedForDeletion);
+            this.particles = this.particles.filter(object => !object.markedForDeletion);
         }
 
         init() {
