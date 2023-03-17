@@ -33,6 +33,14 @@ window.addEventListener('load', function() {
             this.image = document.getElementById('bull');
         }
 
+        restart() {
+            this.collisionX = this.game.width * 0.5;
+            this.collisionY = this.game.height * 0.5;
+
+            this.spriteX = this.collisionX - this.width * 0.5;
+            this.spriteY = this.collisionY - this.height * 0.5 - 100;
+        }
+
         draw(context) {
             context.drawImage(this.image, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight , this.spriteWidth, this.spriteHeight, this.spriteX, this.spriteY, this.width, this.height)
             if(this.game.debug) {
@@ -435,6 +443,7 @@ window.addEventListener('load', function() {
 
             window.addEventListener('keydown', e => {
                 if(e.key === 'd') this.debug = !this.debug;
+                if(e.key === 'r') this.restart();
             })
         }
 
@@ -522,6 +531,24 @@ window.addEventListener('load', function() {
             this.eggs = this.eggs.filter(egg => !egg.markedForDeletion);
             this.hatchlings = this.hatchlings.filter(hatchling => !hatchling.markedForDeletion);
             this.particles = this.particles.filter(object => !object.markedForDeletion);
+        }
+
+        restart() {
+            this.player.restart();
+            this.obstacles = [];
+            this.eggs = [];
+            this.enemies = [];
+            this.hatchlings = [];
+            this.particles = [];
+            this.mouse = {
+                x: this.width * 0.5,
+                y: this.height * 0.5,
+                pressed: false
+            }
+            this.score = 0;
+            this.lostHatchlings = 0;
+            this.gameOver = false;
+            this.init();
         }
 
         init() {
